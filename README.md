@@ -37,8 +37,8 @@ lib/
 import { BrowserMCPClient, useMCP } from "@/lib/browser-mcp";
 import { MCPDashboard } from "@/lib/browser-mcp/ui";
 
-// To use the MCP system in your component:
-const mcp = useMCP({ useWorker: true }); // Use Web Worker mode (default: false)
+// To use the MCP in your component:
+const mcp = useMCP();
 ```
 
 For more details, see the code in `lib/browser-mcp/`.

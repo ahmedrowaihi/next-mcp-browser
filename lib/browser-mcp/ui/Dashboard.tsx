@@ -30,8 +30,9 @@ import {
   Unlink,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMCP } from "../use-mcp";
+import { Switch } from "@/components/ui/switch";
 
 export default function MCPDashboard() {
   const {
@@ -46,7 +47,9 @@ export default function MCPDashboard() {
     listTools,
     callTool,
     clearLogs,
-  } = useMCP({ useWorker: true });
+    isWorkerMode,
+    toggleWorkerMode,
+  } = useMCP();
 
   const [echoMessage, setEchoMessage] = useState("");
   const [echoResult, setEchoResult] = useState("");
@@ -112,7 +115,13 @@ export default function MCPDashboard() {
             Model Context Protocol Client & Server in Browser
           </p>
         </div>
-        {getStatusBadge()}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Web Worker</span>
+            <Switch checked={isWorkerMode} onCheckedChange={toggleWorkerMode} />
+          </div>
+          {getStatusBadge()}
+        </div>
       </div>
 
       {/* Server Control */}

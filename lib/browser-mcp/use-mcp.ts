@@ -11,12 +11,8 @@ export interface LogEntry {
   type: "info" | "error" | "success"
 }
 
-export interface UseMCPOptions {
-  useWorker?: boolean
-}
-
-export function useMCP({ useWorker = false }: UseMCPOptions) {
-
+export function useMCP() {
+  const [isWorkerMode, setUseWorker] = useState(false)
   const [isServerRunning, setIsServerRunning] = useState(false)
   const [isClientConnected, setIsClientConnected] = useState(false)
   const [tools, setTools] = useState<ToolInfo[]>([])
@@ -38,7 +34,7 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
   const startServer = useCallback(async () => {
     try {
       addLog("Starting MCP Server...")
-      if (useWorker) {
+      if (isWorkerMode) {
         const worker = new Worker(new URL("./server.worker.ts", import.meta.url), { type: "module" })
         transportRef.current = new WorkerTransport(worker)
         serverRef.current = null // No server in main thread
@@ -53,7 +49,7 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
     } catch (error) {
       addLog(`Failed to start server: ${error instanceof Error ? error.message : "Unknown error"}`, "error")
     }
-  }, [addLog, useWorker])
+  }, [addLog, isWorkerMode])
 
   const stopServer = useCallback(async () => {
     try {
@@ -63,7 +59,7 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
       }
 
       addLog("Stopping MCP Server...")
-      if (useWorker) {
+      if (isWorkerMode) {
         if (transportRef.current && "disconnect" in transportRef.current) {
           transportRef.current.disconnect()
         }
@@ -80,7 +76,7 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
     } catch (error) {
       addLog(`Failed to stop server: ${error instanceof Error ? error.message : "Unknown error"}`, "error")
     }
-  }, [isClientConnected, addLog, useWorker])
+  }, [isClientConnected, addLog, isWorkerMode])
 
   const connectClient = useCallback(async () => {
     try {
@@ -147,6 +143,22 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
     [addLog],
   )
 
+  // Toggle worker mode and reset all MCP state
+  const toggleWorkerMode = useCallback(() => {
+    setUseWorker((prev) => {
+      const next = !prev;
+      // Reset all MCP state and refs
+      setIsServerRunning(false);
+      setIsClientConnected(false);
+      setTools([]);
+      setLogs([]);
+      transportRef.current = null;
+      serverRef.current = null;
+      clientRef.current = null;
+      return next;
+    });
+  }, []);
+
   return {
     isServerRunning,
     isClientConnected,
@@ -159,5 +171,7 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
     listTools,
     callTool,
     clearLogs,
+    isWorkerMode,
+    toggleWorkerMode,
   }
 }
