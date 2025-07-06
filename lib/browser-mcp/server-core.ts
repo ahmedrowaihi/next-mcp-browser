@@ -1,10 +1,25 @@
 import type { MCPMessage } from "./transport"
 
 export class BrowserMCPServerCore {
-  private tools: Map<string, any>
+  private tools: Map<string, any> = new Map()
 
-  constructor(tools: Map<string, any>) {
-    this.tools = tools
+  public registerTool(name: string, tool: any): void {
+    this.tools.set(name, tool)
+  }
+
+  public async registerDefaultTools(toolNames: string[] = ["echo", "ping", "api_call"]): Promise<void> {
+    for (const name of toolNames) {
+      if (name === "echo") {
+        const { createEchoTool } = await import("./tools/echo-tool")
+        this.registerTool("echo", createEchoTool())
+      } else if (name === "ping") {
+        const { createPingTool } = await import("./tools/ping-tool")
+        this.registerTool("ping", createPingTool())
+      } else if (name === "api_call") {
+        const { createApiCallTool } = await import("./tools/api-call-tool")
+        this.registerTool("api_call", createApiCallTool())
+      }
+    }
   }
 
   public async handleMessage(message: MCPMessage): Promise<MCPMessage> {

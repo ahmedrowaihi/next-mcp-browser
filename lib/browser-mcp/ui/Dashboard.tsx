@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -11,7 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -19,19 +18,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMCP } from "../use-mcp";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Play,
-  Square,
+  Globe,
   Link,
-  Unlink,
   List,
   MessageSquare,
-  Zap,
-  Globe,
+  Play,
+  Square,
   Trash2,
+  Unlink,
+  Zap,
 } from "lucide-react";
+import { useState } from "react";
+import { useMCP } from "../use-mcp";
 
 export default function MCPDashboard() {
   const {
@@ -48,7 +48,6 @@ export default function MCPDashboard() {
     clearLogs,
   } = useMCP({ useWorker: true });
 
-  // Tool testing states
   const [echoMessage, setEchoMessage] = useState("");
   const [echoResult, setEchoResult] = useState("");
   const [pingTarget, setPingTarget] = useState("");

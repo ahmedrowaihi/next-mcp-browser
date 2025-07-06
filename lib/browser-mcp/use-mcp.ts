@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react"
 import { BrowserTransport, WorkerTransport } from "./transport"
-import { BrowserMCPServerMain } from "./server-main"
+import { BrowserMCPServerMain } from "./server.main"
 import { BrowserMCPClient, type ToolInfo, type ToolCallResult } from "./client"
 
 export interface LogEntry {
@@ -39,13 +39,13 @@ export function useMCP({ useWorker = false }: UseMCPOptions) {
     try {
       addLog("Starting MCP Server...")
       if (useWorker) {
-        // Start server in a Web Worker
         const worker = new Worker(new URL("./server.worker.ts", import.meta.url), { type: "module" })
         transportRef.current = new WorkerTransport(worker)
         serverRef.current = null // No server in main thread
       } else {
         transportRef.current = new BrowserTransport()
         serverRef.current = new BrowserMCPServerMain(transportRef.current)
+        await serverRef.current.registerDefaultTools()
         await serverRef.current.start()
       }
       setIsServerRunning(true)
