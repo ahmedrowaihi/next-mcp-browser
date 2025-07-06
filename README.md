@@ -4,11 +4,11 @@
 
 ## Overview
 
-This repository contains the browser MCP module and related UI for your project.
+This repository contains the browser MCP module and related logic for your project.
 
 ## Browser MCP Module Structure
 
-All browser MCP-related logic and UI are now grouped under `lib/browser-mcp/` for clarity and maintainability.
+All browser MCP-related logic is grouped under `lib/browser-mcp/` for clarity and maintainability.
 
 **Structure:**
 
@@ -25,20 +25,46 @@ lib/
       ping-tool.ts
     transport.ts      # Browser and worker transport implementations
     use-mcp.ts        # React hook for MCP system (useMCP)
-    index.ts          # Barrel export for MCP logic
-    ui/
-      Dashboard.tsx   # Main MCP dashboard UI component
-      index.ts        # Barrel export for UI components
+
 ```
 
-**Usage Example:**
+## MCP Protocol Flow
 
-```tsx
-import { BrowserMCPClient, useMCP } from "@/lib/browser-mcp";
-import { MCPDashboard } from "@/lib/browser-mcp/ui";
+### Main Thread Mode
 
-// To use the MCP in your component:
-const mcp = useMCP();
+```mermaid
+sequenceDiagram
+  participant Client as "Client"
+  participant Transport as "BrowserTransport"
+  participant Server as "MCP Server (Main Thread)"
+  participant Tool as "Tool"
+
+  Client->>Transport: send(tool call)
+  Transport->>Server: deliver
+  Server->>Tool: handle
+  Tool-->>Server: result
+  Server-->>Transport: result
+  Transport-->>Client: result
+```
+
+### Worker Thread Mode
+
+```mermaid
+sequenceDiagram
+  participant Client as "Client"
+  participant Transport as "WorkerTransport"
+  participant Worker as "Web Worker"
+  participant Server as "MCP Server (Worker)"
+  participant Tool as "Tool"
+
+  Client->>Transport: send(tool call)
+  Transport->>Worker: postMessage
+  Worker->>Server: deliver
+  Server->>Tool: handle
+  Tool-->>Server: result
+  Server-->>Worker: result
+  Worker-->>Transport: message
+  Transport-->>Client: result
 ```
 
 For more details, see the code in `lib/browser-mcp/`.

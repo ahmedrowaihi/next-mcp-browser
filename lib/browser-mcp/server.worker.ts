@@ -10,7 +10,7 @@ const server = new BrowserMCPServerWorker()
 
 server.registerDefaultTools()
 
-;(self as any).onmessage = async (event: MessageEvent) => {
+self.onmessage = async (event: MessageEvent) => {
     const response = await server.handleMessage(event.data)
-    ;(self as any).postMessage(response)
+    self.postMessage(response)
 }
