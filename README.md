@@ -17,8 +17,12 @@ lib/
   browser-mcp/
     client.ts         # Browser MCP client logic
     server-core.ts    # Shared, environment-agnostic server logic
-    server-main.ts    # Main-thread server implementation
+    server.main.ts    # Main-thread server implementation
     server.worker.ts  # Web Worker server entry point
+    tools/            # Built-in MCP tools
+      api-call-tool.ts
+      echo-tool.ts
+      ping-tool.ts
     transport.ts      # Browser and worker transport implementations
     use-mcp.ts        # React hook for MCP system (useMCP)
     index.ts          # Barrel export for MCP logic
