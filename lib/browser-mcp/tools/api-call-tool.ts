@@ -48,7 +48,6 @@ export function createApiCallTool() {
     },
     handler: async (args: ApiCallToolInput): Promise<ApiCallToolResult> => {
       const validatedArgs = ApiCallToolSchema.parse(args)
-
       try {
         const response = await fetch(validatedArgs.url, {
           method: validatedArgs.method,
@@ -58,16 +57,13 @@ export function createApiCallTool() {
           },
           body: validatedArgs.body,
         })
-
         const responseText = await response.text()
         let responseData
-
         try {
           responseData = JSON.parse(responseText)
         } catch {
           responseData = responseText
         }
-
         return {
           content: [
             {

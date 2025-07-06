@@ -29,7 +29,6 @@ export function createEchoTool() {
     },
     handler: async (args: EchoToolInput): Promise<EchoToolResult> => {
       const validatedArgs = EchoToolSchema.parse(args)
-
       return {
         content: [
           {

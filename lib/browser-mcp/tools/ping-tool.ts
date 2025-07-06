@@ -30,7 +30,6 @@ export function createPingTool() {
     handler: async (args: PingToolInput): Promise<PingToolResult> => {
       const validatedArgs = PingToolSchema.parse(args)
       const target = validatedArgs.target || "server"
-
       return {
         content: [
           {

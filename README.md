@@ -16,9 +16,11 @@ All browser MCP-related logic and UI are now grouped under `lib/browser-mcp/` fo
 lib/
   browser-mcp/
     client.ts         # Browser MCP client logic
-    server.ts         # Browser MCP server logic
-    transport.ts      # Browser transport implementation
-    useMCPSystem.ts   # React hook for MCP system (if present)
+    server-core.ts    # Shared, environment-agnostic server logic
+    server-main.ts    # Main-thread server implementation
+    server.worker.ts  # Web Worker server entry point
+    transport.ts      # Browser and worker transport implementations
+    use-mcp.ts        # React hook for MCP system (useMCP)
     index.ts          # Barrel export for MCP logic
     ui/
       Dashboard.tsx   # Main MCP dashboard UI component
@@ -28,8 +30,11 @@ lib/
 **Usage Example:**
 
 ```tsx
-import { BrowserMCPClient, useMCPSystem } from "@/lib/browser-mcp";
+import { BrowserMCPClient, useMCP } from "@/lib/browser-mcp";
 import { MCPDashboard } from "@/lib/browser-mcp/ui";
+
+// To use the MCP system in your component:
+const mcp = useMCP({ useWorker: true }); // Use Web Worker mode (default: false)
 ```
 
 For more details, see the code in `lib/browser-mcp/`.

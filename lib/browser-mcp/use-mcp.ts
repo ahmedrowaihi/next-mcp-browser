@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import { BrowserTransport } from "./transport"
-import { BrowserMCPServer } from "./server"
+import { BrowserTransport, WorkerTransport } from "./transport"
+import { BrowserMCPServerMain } from "./server-main"
 import { BrowserMCPClient, type ToolInfo, type ToolCallResult } from "./client"
 
 export interface LogEntry {
@@ -11,14 +11,19 @@ export interface LogEntry {
   type: "info" | "error" | "success"
 }
 
-export function useMCPSystem() {
+export interface UseMCPOptions {
+  useWorker?: boolean
+}
+
+export function useMCP({ useWorker = false }: UseMCPOptions) {
+
   const [isServerRunning, setIsServerRunning] = useState(false)
   const [isClientConnected, setIsClientConnected] = useState(false)
   const [tools, setTools] = useState<ToolInfo[]>([])
   const [logs, setLogs] = useState<LogEntry[]>([])
 
-  const transportRef = useRef<BrowserTransport | null>(null)
-  const serverRef = useRef<BrowserMCPServer | null>(null)
+  const transportRef = useRef<BrowserTransport | WorkerTransport | null>(null)
+  const serverRef = useRef<BrowserMCPServerMain | null>(null)
   const clientRef = useRef<BrowserMCPClient | null>(null)
 
   const addLog = useCallback((message: string, type: LogEntry["type"] = "info") => {
@@ -33,15 +38,22 @@ export function useMCPSystem() {
   const startServer = useCallback(async () => {
     try {
       addLog("Starting MCP Server...")
-      transportRef.current = new BrowserTransport()
-      serverRef.current = new BrowserMCPServer(transportRef.current)
-      await serverRef.current.start()
+      if (useWorker) {
+        // Start server in a Web Worker
+        const worker = new Worker(new URL("./server.worker.ts", import.meta.url), { type: "module" })
+        transportRef.current = new WorkerTransport(worker)
+        serverRef.current = null // No server in main thread
+      } else {
+        transportRef.current = new BrowserTransport()
+        serverRef.current = new BrowserMCPServerMain(transportRef.current)
+        await serverRef.current.start()
+      }
       setIsServerRunning(true)
       addLog("MCP Server started successfully", "success")
     } catch (error) {
       addLog(`Failed to start server: ${error instanceof Error ? error.message : "Unknown error"}`, "error")
     }
-  }, [addLog])
+  }, [addLog, useWorker])
 
   const stopServer = useCallback(async () => {
     try {
@@ -51,8 +63,14 @@ export function useMCPSystem() {
       }
 
       addLog("Stopping MCP Server...")
-      if (serverRef.current) {
-        await serverRef.current.stop()
+      if (useWorker) {
+        if (transportRef.current && "disconnect" in transportRef.current) {
+          transportRef.current.disconnect()
+        }
+      } else {
+        if (serverRef.current) {
+          await serverRef.current.stop()
+        }
       }
       serverRef.current = null
       transportRef.current = null
@@ -62,7 +80,7 @@ export function useMCPSystem() {
     } catch (error) {
       addLog(`Failed to stop server: ${error instanceof Error ? error.message : "Unknown error"}`, "error")
     }
-  }, [isClientConnected, addLog])
+  }, [isClientConnected, addLog, useWorker])
 
   const connectClient = useCallback(async () => {
     try {
@@ -118,7 +136,7 @@ export function useMCPSystem() {
           throw new Error("Client not connected")
         }
         addLog(`Calling tool '${name}' with args: ${JSON.stringify(args)}`)
-        const result = await clientRef.current.callTool(name, args)
+        const result = await clientRef.current.callTool(name, args) as ToolCallResult | null
         addLog(`Tool '${name}' executed successfully`, "success")
         return result
       } catch (error) {

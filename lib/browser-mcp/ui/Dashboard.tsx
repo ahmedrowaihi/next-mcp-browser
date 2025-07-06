@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useMCPSystem } from "../use-mcp";
+import { useMCP } from "../use-mcp";
 import {
   Play,
   Square,
@@ -46,7 +46,7 @@ export default function MCPDashboard() {
     listTools,
     callTool,
     clearLogs,
-  } = useMCPSystem();
+  } = useMCP({ useWorker: true });
 
   // Tool testing states
   const [echoMessage, setEchoMessage] = useState("");
